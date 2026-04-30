@@ -1,0 +1,23 @@
+{
+  "dump_date": "2025-07-13",
+  "source": "DILA Légifrance Freemium LEGI",
+  "disclaimer": "Articles en vigueur au 13/07/2025 — peut ne pas refléter les modifications ultérieures",
+  "codes": [
+    "Code du travail",
+    "Code de la consommation"
+  ],
+  "legitext_ids": [
+    "LEGITEXT000006072050",
+    "LEGITEXT000006069565"
+  ],
+  "total_documents": 13644,
+  "avg_length_chars": 608,
+  "by_code": {
+    "Code du travail": 11496,
+    "Code de la consommation": 2148
+  },
+  "by_etat": {
+    "VIGUEUR": 13572,
+    "VIGUEUR_DIFF": 72
+  }
+}
