@@ -1,0 +1,24 @@
+# Ingestion
+pylegifrance
+langchain
+langchain-community
+
+# Indexing & RAG
+langchain-openai
+chromadb
+sentence-transformers
+
+# API
+fastapi
+uvicorn[standard]
+
+# Evaluation
+ragas
+
+# Monitoring
+langfuse
+
+# Utils
+python-dotenv
+tqdm
+pytest
