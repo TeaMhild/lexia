@@ -1,7 +1,27 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
 .env
+
+# ── Données brutes ────────────────────────────────────────────────────────────
+data/raw/*.tar.gz
 data/raw/*.jsonl
+data/raw/legi/
+
+# ── Données traitées ──────────────────────────────────────────────────────────
 data/processed/*.jsonl
+
+# ── Index vectoriel (Chroma) — généré en phase 2 ─────────────────────────────
 data/index/
+
+# ── Fichiers à garder (documentation + métadonnées) ──────────────────────────
+!data/processed/CORPUS.md
+!data/processed/corpus_metadata.json
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/index/.gitkeep
+
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.pyc
+
+# ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
