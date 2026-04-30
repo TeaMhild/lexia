@@ -1,73 +1,151 @@
 """
 ingestion/loader.py
 
-Récupère les articles juridiques depuis l'API Légifrance
-via pylegifrance v1.6.3 et les retourne comme List[Document] LangChain.
+Parse les fichiers XML du dump LEGI (DILA) et retourne
+des Documents LangChain prêts pour le chunking.
+
+Stratégie de filtrage des états :
+- VIGUEUR : article en vigueur → ON GARDE
+- VIGUEUR_DIFF : entrera en vigueur prochainement → ON GARDE
+- MODIFIE : ancienne version remplacée par une plus récente → ON EXCLUT
+- ABROGE / ABROGE_DIFF : abrogé explicitement → ON EXCLUT
+- PERIME : périmé → ON EXCLUT
+- ANNULE : annulé par le Conseil d'État → ON EXCLUT
+- TRANSFERE : transféré dans un autre code → ON EXCLUT
+- MODIFIE_MORT_NE : modifié avant entrée en vigueur → ON EXCLUT
 """
 
-import os
-from dotenv import load_dotenv
+import re
+from pathlib import Path
+from xml.etree import ElementTree as ET
 from langchain_core.documents import Document
-from pylegifrance import LegifranceClient, ApiConfig
-from pylegifrance.fonds.code import Code
-from pylegifrance.models.code.enum import NomCode
+from tqdm import tqdm
 
-load_dotenv()
+# ── Configuration ─────────────────────────────────────────────────────────────
 
+LEGI_BASE = Path("/workspaces/lexia/data/raw/legi")
 
-# NomCode est un Enum — voici les deux codes qui nous intéressent
-CODES = [
-    (NomCode.CDT,  "Code du travail"),
-    (NomCode.CDC,  "Code de la consommation"),
-]
-# ── Client Légifrance ────────────────────────────────────────────────────────
+CODES = {
+    "LEGITEXT000006072050": "Code du travail",
+    "LEGITEXT000006069565": "Code de la consommation",
+}
 
-def get_client() -> LegifranceClient:
+# États à exclure — on garde tout le reste (VIGUEUR, VIGUEUR_DIFF)
+ETATS_EXCLUS = {
+    "MODIFIE",
+    "ABROGE",
+    "ABROGE_DIFF",
+    "PERIME",
+    "ANNULE",
+    "TRANSFERE",
+    "MODIFIE_MORT_NE",
+}
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def extract_section_hierarchy(contexte: ET.Element) -> str:
     """
-    Initialise le client pylegifrance avec les clés OAuth du .env.
-    ApiConfig lit automatiquement LEGIFRANCE_CLIENT_ID
-    et LEGIFRANCE_CLIENT_SECRET depuis les variables d'environnement.
+    Extrait la hiérarchie de sections depuis le CONTEXTE.
+    Ex: "Partie législative > Titre II > Chapitre 1 > Section 3"
+    
+    Ces métadonnées permettent le metadata filtering
+    au retrieval — ex: chercher uniquement dans la "Partie législative".
     """
-    config = ApiConfig(
-        client_id=os.getenv("LEGIFRANCE_CLIENT_ID"),
-        client_secret=os.getenv("LEGIFRANCE_CLIENT_SECRET"),
-    )
-    return LegifranceClient(config)
+    if contexte is None:
+        return ""
+    titles = []
+    for tm in contexte.iter("TITRE_TM"):
+        text = tm.text
+        if text and text.strip():
+            titles.append(text.strip())
+    return " > ".join(titles)
 
 
-# ── Transformation en Documents LangChain ────────────────────────────────────
-
-def to_documents(articles: list, code_name: str) -> list[Document]:
+def extract_contenu(root: ET.Element) -> str:
     """
-    Transforme les objets Article (Pydantic) en Documents LangChain.
-
-    On embarque les métadonnées
-    dès cette étape — elles permettront le metadata filtering
-    au retrieval (ex: chercher uniquement dans le Code du travail).
+    Extrait le texte du BLOC_TEXTUEL en récupérant tout le texte
+    récursivement via itertext() — nécessaire car le contenu est
+    souvent enveloppé dans des balises <p>, <br/>, <i> etc.
     """
-    documents = []
+    contenu_node = root.find("BLOC_TEXTUEL/CONTENU")
+    if contenu_node is None:
+        return ""
+    
+    # itertext() extrait tout le texte y compris dans les balises enfants
+    contenu = " ".join(contenu_node.itertext())
+    # Normalise les espaces et sauts de ligne
+    contenu = re.sub(r"\s+", " ", contenu).strip()
+    return contenu
 
-    for article in articles:
-        texte = (article.texte or "").strip()
 
-        # On filtre les articles vides ou trop courts (souvent abrogés)
-        if not texte or len(texte) < 50:
-            continue
+# ── Parser ────────────────────────────────────────────────────────────────────
 
-        doc = Document(
-            page_content=texte,
+def parse_article(xml_path: Path, code_name: str) -> Document | None:
+    """
+    Parse un fichier XML LEGIARTI et retourne un Document LangChain.
+    Retourne None si l'article doit être exclu.
+    """
+    try:
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        # ── Filtre état ───────────────────────────────────────────────────────
+        etat = root.findtext("META/META_SPEC/META_ARTICLE/ETAT", "").strip()
+        if etat in ETATS_EXCLUS:
+            return None
+
+        # ── Contenu textuel ───────────────────────────────────────────────────
+        contenu = extract_contenu(root)
+        if not contenu or len(contenu) < 20:
+            return None
+
+        # ── Métadonnées ───────────────────────────────────────────────────────
+        article_id  = root.findtext("META/META_COMMUN/ID", "").strip()
+        article_num = root.findtext("META/META_SPEC/META_ARTICLE/NUM", "").strip()
+        date_debut  = root.findtext("META/META_SPEC/META_ARTICLE/DATE_DEBUT", "").strip()
+        date_fin    = root.findtext("META/META_SPEC/META_ARTICLE/DATE_FIN", "").strip()
+
+        contexte = root.find("CONTEXTE")
+        section  = extract_section_hierarchy(contexte)
+
+        return Document(
+            page_content=contenu,
             metadata={
-                "source":       "legifrance",
+                "source":       "legifrance_dump",
                 "code_name":    code_name,
-                "article_id":   article.id or "",
-                "article_num":  article.num or "",
-                "url": (
-                    f"https://www.legifrance.gouv.fr/codes/article_lc/"
-                    f"{article.id or ''}"
-                ),
+                "article_id":   article_id,
+                "article_num":  article_num,
+                "section":      section,
+                "date_debut":   date_debut,
+                "date_fin":     date_fin,
+                "etat":         etat,
+                "url": f"https://www.legifrance.gouv.fr/codes/article_lc/{article_id}",
             },
         )
-        documents.append(doc)
+
+    except ET.ParseError as e:
+        print(f"  Erreur parsing {xml_path.name}: {e}")
+        return None
+
+
+# ── Chargement par code ───────────────────────────────────────────────────────
+
+def load_code(legitext_id: str, code_name: str) -> list[Document]:
+    """
+    Charge tous les articles d'un code depuis le dump XML.
+    Cherche récursivement tous les fichiers LEGIARTI sous le dossier du code.
+    """
+    xml_files = [
+        f for f in LEGI_BASE.rglob("LEGIARTI*.xml")
+        if legitext_id in str(f)
+    ]
+    print(f"  {len(xml_files)} fichiers LEGIARTI trouvés")
+
+    documents = []
+    for xml_path in tqdm(xml_files, desc=code_name):
+        doc = parse_article(xml_path, code_name)
+        if doc:
+            documents.append(doc)
 
     return documents
 
@@ -79,40 +157,30 @@ def load_all_codes() -> list[Document]:
     Point d'entrée principal : charge tous les codes définis dans CODES.
     Retourne la liste complète de Documents prêts pour le chunking.
     """
-    client = get_client()
-    code_facade = Code(client)
     all_documents = []
 
-    for nom_code, code_name in CODES:
+    for legitext_id, code_name in CODES.items():
         print(f"\nChargement : {code_name}")
-
-        # Récupère tous les articles du code (état en vigueur)
-        articles = (
-            code_facade.search()
-            .in_code(nom_code)
-            .execute()
-        )
-
-        print(f"  → {len(articles)} articles bruts récupérés")
-
-        docs = to_documents(articles, code_name)
-        print(f"  → {len(docs)} documents valides après filtrage")
-
+        docs = load_code(legitext_id, code_name)
+        print(f"  → {len(docs)} articles retenus")
         all_documents.extend(docs)
 
-    # Stats utiles à montrer 
     print("\n── Statistiques corpus ──────────────────────────")
     print(f"Total documents  : {len(all_documents)}")
     if all_documents:
         avg_len = sum(len(d.page_content) for d in all_documents) // len(all_documents)
         print(f"Longueur moyenne : {avg_len} caractères")
-        codes = set(d.metadata["code_name"] for d in all_documents)
-        print(f"Codes chargés    : {codes}")
+        print(f"Codes chargés    : {set(d.metadata['code_name'] for d in all_documents)}")
+        etats = {}
+        for d in all_documents:
+            e = d.metadata["etat"]
+            etats[e] = etats.get(e, 0) + 1
+        print(f"Répartition états: {etats}")
 
     return all_documents
 
 
-# ── Test rapide ───────────────────────────────────────────────────────────────
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     docs = load_all_codes()
@@ -120,5 +188,5 @@ if __name__ == "__main__":
     if docs:
         sample = docs[0]
         print("\n── Exemple document ─────────────────────────────")
-        print(f"Contenu  : {sample.page_content[:200]}...")
+        print(f"Contenu  : {sample.page_content[:300]}")
         print(f"Metadata : {sample.metadata}")
