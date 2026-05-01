@@ -24,4 +24,4 @@ __pycache__/
 *.pyc
 
 # ── OS ────────────────────────────────────────────────────────────────────────
-.DS_Store
+.DS_Storedata/processed/chunks.jsonl
