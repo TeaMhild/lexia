@@ -6,29 +6,32 @@ et la procédure pour le reproduire de zéro.
 
 ## Pipeline de construction
 
-DILA (data.gouv.fr)
-│
-│  curl (1.1 Go tar.gz)
-▼
-Dump Freemium LEGI
-│
-│  tar --wildcards (extraction 2 codes)
-▼
-~47 946 fichiers XML LEGIARTI
-│
-│  ingestion/loader.py
-│  - filtrage ETAT == VIGUEUR / VIGUEUR_DIFF
-│  - extraction contenu via itertext()
-│  - enrichissement métadonnées
-▼
-corpus.jsonl (13 644 articles)
-│
-│  ingestion/chunker.py
-│  - stratégie adaptative par longueur
-│  - RecursiveCharacterTextSplitter
-│  - parent_content embarqué
-▼
-chunks.jsonl (prêts pour l'embedding)
+```
+DILA (data.gouv.fr)          Source officielle open data
+        │
+        │ curl (1.1 Go tar.gz)
+        ▼
+Dump Freemium LEGI            ~47 946 fichiers XML LEGIARTI
+        │
+        │ tar --wildcards
+        │ extraction 2 codes uniquement
+        ▼
+Fichiers XML LEGIARTI          Code du travail + Code de la consommation
+        │
+        │ ingestion/loader.py
+        │ • filtrage ETAT (VIGUEUR / VIGUEUR_DIFF)
+        │ • extraction contenu via itertext()
+        │ • enrichissement métadonnées
+        ▼
+corpus.jsonl                   13 644 articles en vigueur
+        │
+        │ ingestion/chunker.py
+        │ • stratégie adaptative par longueur
+        │ • RecursiveCharacterTextSplitter
+        │ • parent_content embarqué
+        ▼
+chunks.jsonl                   Prêts pour l'embedding (phase 3)
+```
 
 ## Source des données
 
