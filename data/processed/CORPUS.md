@@ -1,86 +1,77 @@
 # Corpus LexIA — Documentation
 
-## Source
-- **Fournisseur** : DILA (Direction de l'Information Légale et Administrative)
-- **Dataset** : Freemium LEGI — Codes, lois et règlements consolidés
-- **Accès** : [data.gouv.fr](https://www.data.gouv.fr/datasets/legi-codes-lois-et-reglements-consolides)
-- **Licence** : Licence Ouverte / Open Licence v2.0 (Etalab)
-- **Date du dump** : 13 juillet 2025
+LexIA est un assistant juridique RAG basé sur le droit français.
+Ce document décrit la construction du corpus, les décisions techniques
+et la procédure pour le reproduire de zéro.
 
-## Téléchargement du dump
+## Pipeline de construction
 
-### 1. Trouver le dump le plus récent
+DILA (data.gouv.fr)
+│
+│  curl (1.1 Go tar.gz)
+▼
+Dump Freemium LEGI
+│
+│  tar --wildcards (extraction 2 codes)
+▼
+~47 946 fichiers XML LEGIARTI
+│
+│  ingestion/loader.py
+│  - filtrage ETAT == VIGUEUR / VIGUEUR_DIFF
+│  - extraction contenu via itertext()
+│  - enrichissement métadonnées
+▼
+corpus.jsonl (13 644 articles)
+│
+│  ingestion/chunker.py
+│  - stratégie adaptative par longueur
+│  - RecursiveCharacterTextSplitter
+│  - parent_content embarqué
+▼
+chunks.jsonl (prêts pour l'embedding)
 
-Les dumps sont disponibles sur le serveur FTP de la DILA : https://echanges.dila.gouv.fr/OPENDATA/LEGI/
-Les fichiers sont nommés `Freemium_legi_global_YYYYMMDD-HHMMSS.tar.gz`.
-Prenez toujours le plus récent.
+## Source des données
 
-### 2. Télécharger le dump
+| Champ | Valeur |
+|---|---|
+| Fournisseur | DILA (Direction de l'Information Légale et Administrative) |
+| Dataset | Freemium LEGI — Codes, lois et règlements consolidés |
+| Accès | [data.gouv.fr](https://www.data.gouv.fr/datasets/legi-codes-lois-et-reglements-consolides) |
+| Licence | Licence Ouverte / Open Licence v2.0 (Etalab) |
+| Date du dump | 13 juillet 2025 |
 
-```bash
-# Remplacez la date par celle du dump le plus récent
-curl -O "https://echanges.dila.gouv.fr/OPENDATA/LEGI/Freemium_legi_global_20250713-140000.tar.gz"
-```
+### Pourquoi le dump plutôt que l'API ?
 
-Le fichier fait ~1.1 Go — comptez 5 à 10 minutes selon votre connexion.
+L'API Légifrance (portail PISTE) retourne **maximum 3 résultats par requête**
+en accès gratuit — insuffisant pour un corpus exhaustif.
+Le dump open data donne accès à l'intégralité des 73 codes en vigueur
+sans limitation, est reproductible, et ne dépend pas d'une API tierce.
 
-### 3. Extraire uniquement les deux codes
+## Codes ingérés
 
-```bash
-mkdir -p data/raw/legi_xml
+| Code | LEGITEXT | Articles retenus |
+|---|---|---|
+| Code du travail | LEGITEXT000006072050 | 11 496 |
+| Code de la consommation | LEGITEXT000006069565 | 2 148 |
+| **Total** | | **13 644** |
 
-tar -xzf Freemium_legi_global_20250713-140000.tar.gz \
-  --wildcards \
-  "legi/global/code_et_TNC_en_vigueur/code_en_vigueur/LEGI/TEXT/*LEGITEXT000006072050*" \
-  "legi/global/code_et_TNC_en_vigueur/code_en_vigueur/LEGI/TEXT/*LEGITEXT000006069565*" \
-  -C data/raw/legi/
-```
+## Filtrage des états juridiques
 
-> **Note** : l'extraction parcourt tout le tar.gz (1.1 Go) même si on ne garde
-> que deux codes — comptez 2 à 3 minutes.
+Le dump contient toutes les versions historiques de chaque article.
+On conserve uniquement les articles en vigueur :
 
-### 4. Vérifier l'extraction
+| État | Signification | Conservé |
+|---|---|---|
+| `VIGUEUR` | En vigueur | ✅ |
+| `VIGUEUR_DIFF` | Entrera en vigueur prochainement | ✅ |
+| `MODIFIE` | Ancienne version remplacée | ❌ |
+| `ABROGE` | Abrogé explicitement | ❌ |
+| `PERIME` | Périmé | ❌ |
+| `ANNULE` | Annulé par le Conseil d'État | ❌ |
+| `TRANSFERE` | Transféré dans un autre code | ❌ |
+| `MODIFIE_MORT_NE` | Modifié avant son entrée en vigueur | ❌ |
 
-```bash
-# Doit retourner ~47 946 fichiers
-find data/raw/legi -name "LEGIARTI*.xml" | wc -l
-
-# Dont ~11 433 VIGUEUR pour le Code du travail
-grep -rl "<ETAT>VIGUEUR</ETAT>" \
-  data/raw/legi/global/code_et_TNC_en_vigueur/code_en_vigueur/LEGI/TEXT/00/00/06/07/20/LEGITEXT000006072050/article/ | wc -l
-```
-
-### 5. Lancer le pipeline d'ingestion
-
-```bash
-python ingestion/save_corpus.py
-```
-
-## Contenu
-
-| Code | LEGITEXT | Articles retenus | États |
-|---|---|---|---|
-| Code du travail | LEGITEXT000006072050 | ~11 496 | VIGUEUR + VIGUEUR_DIFF |
-| Code de la consommation | LEGITEXT000006069565 | ~2 148 | VIGUEUR + VIGUEUR_DIFF |
-| **Total** | | **~13 644** | |
-
-## Règles de filtrage
-
-Seuls les articles avec les états suivants sont conservés :
-- `VIGUEUR` : article actuellement en vigueur
-- `VIGUEUR_DIFF` : article qui entrera en vigueur prochainement
-
-Les états suivants sont exclus :
-- `MODIFIE` : ancienne version remplacée par une plus récente
-- `ABROGE` / `ABROGE_DIFF` : abrogé explicitement
-- `PERIME` : périmé
-- `ANNULE` : annulé par le Conseil d'État
-- `TRANSFERE` : transféré dans un autre code
-- `MODIFIE_MORT_NE` : modifié avant son entrée en vigueur
-
-## Métadonnées par article
-
-Chaque document embarque les métadonnées suivantes :
+## Métadonnées par article (corpus.jsonl)
 
 ```json
 {
@@ -88,7 +79,7 @@ Chaque document embarque les métadonnées suivantes :
   "code_name":    "Code du travail",
   "article_id":   "LEGIARTI000020690617",
   "article_num":  "D6325-26",
-  "section":      "Partie réglementaire > Sixième partie > Livre III > ...",
+  "section":      "Partie réglementaire > Sixième partie > ...",
   "date_debut":   "2009-06-05",
   "date_fin":     "2999-01-01",
   "etat":         "VIGUEUR",
@@ -96,35 +87,69 @@ Chaque document embarque les métadonnées suivantes :
 }
 ```
 
+## Chunking
+
+### Stratégie adaptative
+
+| Catégorie | Seuil | Articles | chunk_size | overlap |
+|---|---|---|---|---|
+| Court | < 400 chars | ~8 270 (60%) | pas de découpage | — |
+| Moyen | 400–10 000 chars | ~5 358 (39%) | 512 chars | 64 chars |
+| Long (annexes) | > 10 000 chars | 16 (0.1%) | 256 chars | 32 chars |
+
+**Splitter** : `RecursiveCharacterTextSplitter`
+avec séparateurs `["\n\n", "\n", ".", ";", ",", " "]`
+
+**Pourquoi Recursive** : respecte la ponctuation juridique — couper
+au milieu d'un alinéa numéroté changerait le sens de l'article.
+
+### Métadonnées ajoutées par chunk (chunks.jsonl)
+
+```json
+{
+  "chunk_id":       "LEGIARTI000020690617_0",
+  "chunk_index":    0,
+  "chunk_total":    3,
+  "chunk_type":     "standard",
+  "parent_content": "texte complet de l'article parent..."
+}
+```
+
+`parent_content` prépare le **parent-child retrieval** : on retrieve
+sur les petits chunks (précision) mais on envoie l'article complet au LLM (contexte).
+
 ## Limitations
 
-- **Fraîcheur** : le corpus reflète l'état de la législation au **13 juillet 2025**. 
-  Les modifications postérieures à cette date ne sont pas incluses.
-- **Périmètre** : deux codes uniquement. Le pipeline est conçu pour être 
-  étendu à n'importe quel code en ajoutant son LEGITEXT dans `loader.py`.
-- **Exhaustivité** : 11 433 fichiers `VIGUEUR` identifiés par grep dans le dump,
-  cohérent avec les 11 496 articles retenus par le parser (dont 72 `VIGUEUR_DIFF`).
+- **Fraîcheur** : corpus figé au **13 juillet 2025** — les modifications
+  postérieures ne sont pas incluses
+- **Périmètre** : 2 codes sur 73 disponibles dans le dump
+- **Extensibilité** : ajouter un code = ajouter son LEGITEXT dans `loader.py`
 
-## Mise à jour du corpus
+## Fichiers
 
-Pour mettre à jour le corpus avec un dump plus récent :
+data/processed/
+├── CORPUS.md              # cette documentation ✅ versionné
+├── corpus_metadata.json   # statistiques et provenance ✅ versionné
+├── corpus.jsonl           # 13 644 articles bruts ❌ gitignored
+└── chunks.jsonl           # chunks pour l'embedding ❌ gitignored
+
+## Reproduire le corpus de zéro
 
 ```bash
-# 1. Télécharger le nouveau dump sur echanges.dila.gouv.fr
+# 1. Télécharger le dump
+curl -O "https://echanges.dila.gouv.fr/OPENDATA/LEGI/Freemium_legi_global_20250713-140000.tar.gz"
+
 # 2. Extraire les deux codes
-# 3. Relancer le pipeline
+mkdir -p data/raw/legi
+tar -xzf Freemium_legi_global_20250713-140000.tar.gz \
+  --wildcards \
+  "legi/global/code_et_TNC_en_vigueur/code_en_vigueur/LEGI/TEXT/*LEGITEXT000006072050*" \
+  "legi/global/code_et_TNC_en_vigueur/code_en_vigueur/LEGI/TEXT/*LEGITEXT000006069565*" \
+  -C data/raw/legi/
+
+# 3. Parser et sauvegarder le corpus
 python ingestion/save_corpus.py
-```
 
-## Structure des fichiers
-
-```
-data/
-├── raw/
-│   ├── legi/                          # Dump XML extrait (gitignore)
-│   └── Freemium_legi_global_*.tar.gz  # Archive source (gitignore)
-└── processed/
-    ├── corpus.jsonl                   # 13 644 documents (gitignore)
-    ├── corpus_metadata.json           # Statistiques et provenance
-    └── CORPUS.md                      # Cette documentation
+# 4. Chunker
+python ingestion/chunker.py
 ```
