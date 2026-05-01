@@ -130,11 +130,13 @@ sur les petits chunks (précision) mais on envoie l'article complet au LLM (cont
 
 ## Fichiers
 
+```
 data/processed/
 ├── CORPUS.md              # cette documentation ✅ versionné
 ├── corpus_metadata.json   # statistiques et provenance ✅ versionné
 ├── corpus.jsonl           # 13 644 articles bruts ❌ gitignored
 └── chunks.jsonl           # chunks pour l'embedding ❌ gitignored
+```
 
 ## Reproduire le corpus de zéro
 
