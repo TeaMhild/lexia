@@ -39,4 +39,6 @@ logs/
 .cache/
 
 # ── Jupyter ──────────────────────────────────────────────────────────────────
-.ipynb_checkpoints/
+.ipynb_checkpoints/*.egg-info/
+__pycache__/
+
