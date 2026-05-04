@@ -63,22 +63,17 @@ def get_prompt() -> ChatPromptTemplate:
 
 
 def format_context(documents) -> str:
-    """
-    Formate les documents retrieved en contexte lisible pour le LLM.
-
-    NB : le format du contexte impacte directement
-    la qualité des réponses. On structure avec :
-    - Numéro d'article clairement visible
-    - Code juridique d'origine
-    - URL pour la traçabilité
-    - Score de pertinence pour la transparence
-    """
     if not documents:
         return "Aucun article pertinent trouvé."
 
     context_parts = []
     for i, doc in enumerate(documents, 1):
         meta = doc.metadata
+        # Tronque à 1500 chars pour éviter de dépasser les limites de tokens
+        content = doc.page_content[:1500]
+        if len(doc.page_content) > 1500:
+            content += "... [tronqué]"
+
         part = (
             f"[Article {i}]\n"
             f"Code    : {meta.get('code_name', 'N/A')}\n"
@@ -86,12 +81,11 @@ def format_context(documents) -> str:
             f"Section : {meta.get('section', 'N/A')[:100]}\n"
             f"URL     : {meta.get('url', 'N/A')}\n"
             f"Score   : {meta.get('relevance_score', 'N/A')}\n"
-            f"Contenu :\n{doc.page_content}\n"
+            f"Contenu :\n{content}\n"
         )
         context_parts.append(part)
 
     return "\n" + "─" * 50 + "\n".join(context_parts)
-
 
 # ── Test ──────────────────────────────────────────────────────────────────────
 
