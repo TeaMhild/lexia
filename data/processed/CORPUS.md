@@ -15,7 +15,6 @@ et la procédure pour le reproduire de zéro.
 7. [Fichiers](#fichiers)
 8. [Limitations](#limitations)
 9. [Reproduire le corpus de zéro](#reproduire-le-corpus-de-zéro)
-
 ---
 
 ## Pipeline de construction
@@ -375,9 +374,13 @@ python ingestion/save_corpus.py
 python ingestion/chunker.py
 # → produit data/processed/chunks.jsonl (27 781 chunks)
 
-# 5. Indexer (~60 min sur 2 CPUs)
+# 5. Indexer le corpus complet (~60 min sur 2 CPUs)
 mkdir -p logs
 nohup python indexing/embedder.py > logs/indexing.log 2>&1 &
 tail -f logs/indexing.log
-# → produit data/index/chroma/
+# → produit data/index/chroma/ (27 781 chunks indexés)
+
+# 6. Vérifier l'index
+python indexing/vector_store.py
+# → affiche les stats et teste le retrieval
 ```
