@@ -42,3 +42,5 @@ logs/
 .ipynb_checkpoints/*.egg-info/
 __pycache__/
 
+# ── Package metadata (généré par pip install -e .) ───────────────────────────
+*.egg-info/
