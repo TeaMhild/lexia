@@ -20,7 +20,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 from langchain_core.documents import Document
 from tqdm import tqdm
-
+from cleaner import extract_contenu
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 LEGI_BASE = Path("/workspaces/lexia/data/raw/legi")
@@ -59,23 +59,6 @@ def extract_section_hierarchy(contexte: ET.Element) -> str:
         if text and text.strip():
             titles.append(text.strip())
     return " > ".join(titles)
-
-
-def extract_contenu(root: ET.Element) -> str:
-    """
-    Extrait le texte du BLOC_TEXTUEL en récupérant tout le texte
-    récursivement via itertext() — nécessaire car le contenu est
-    souvent enveloppé dans des balises <p>, <br/>, <i> etc.
-    """
-    contenu_node = root.find("BLOC_TEXTUEL/CONTENU")
-    if contenu_node is None:
-        return ""
-    
-    # itertext() extrait tout le texte y compris dans les balises enfants
-    contenu = " ".join(contenu_node.itertext())
-    # Normalise les espaces et sauts de ligne
-    contenu = re.sub(r"\s+", " ", contenu).strip()
-    return contenu
 
 
 # ── Parser ────────────────────────────────────────────────────────────────────
