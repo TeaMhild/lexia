@@ -126,15 +126,11 @@ def similarity_search(
 # ── Statistiques de l'index ───────────────────────────────────────────────────
 
 def get_index_stats() -> dict:
-    """
-    Retourne les statistiques de l'index.
-    Utilisé par le monitoring et l'endpoint GET /health de l'API.
-    """
     collection = get_collection()
 
-    # Échantillon pour les stats
-    sample = collection.get(limit=1000, include=["metadatas"])
-    metadatas = sample["metadatas"]
+    # Récupère TOUS les metadatas — pas juste un échantillon
+    all_meta = collection.get(include=["metadatas"])
+    metadatas = all_meta["metadatas"]
 
     from collections import Counter
     by_code = Counter(m.get("code_name", "unknown") for m in metadatas)
