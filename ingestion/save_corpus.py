@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from langchain_core.documents import Document
 from loader import load_all_codes
+import os
 
 # ── Métadonnées globales du corpus ────────────────────────────────────────────
 # Documenter la fraîcheur des données est critique est très importante dans ce use case
@@ -19,9 +20,9 @@ CORPUS_METADATA = {
     "legitext_ids": ["LEGITEXT000006072050", "LEGITEXT000006069565"],
 }
 
-OUTPUT_PATH     = "/workspaces/lexia/data/processed/corpus.jsonl"
-OUTPUT_META     = "/workspaces/lexia/data/processed/corpus_metadata.json"
-
+BASE_DIR    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_PATH = os.path.join(BASE_DIR, "data", "processed", "corpus.jsonl")
+OUTPUT_META = os.path.join(BASE_DIR, "data", "processed", "corpus_metadata.json")
 
 # ── Sauvegarde ────────────────────────────────────────────────────────────────
 

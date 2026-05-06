@@ -21,11 +21,13 @@ import chromadb
 from chromadb.config import Settings
 from tqdm import tqdm
 import psutil
+import os
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
-CHUNKS_PATH = "/workspaces/lexia/data/processed/chunks.jsonl"
-INDEX_PATH  = "/workspaces/lexia/data/index/chroma"
+BASE_DIR    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INDEX_PATH  = os.path.join(BASE_DIR, "data", "index", "chroma")
+CHUNKS_PATH = os.path.join(BASE_DIR, "data", "processed", "chunks.jsonl")
 MODEL_NAME  = "paraphrase-multilingual-mpnet-base-v2"
 
 BATCH_SIZE  = 64    # sentence-transformers gère bien les batchs sur CPU, plus le BS est grand plus cela va vite

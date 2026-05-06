@@ -17,6 +17,9 @@ from pathlib import Path
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from tqdm import tqdm
+import os
+    
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── Seuils ────────────────────────────────────────────────────────────────────
 
@@ -100,8 +103,8 @@ def chunk_document(doc: Document) -> list[Document]:
 # ── Fonction principale ───────────────────────────────────────────────────────
 
 def chunk_corpus(
-    input_path:  str = "/workspaces/lexia/data/processed/corpus.jsonl",
-    output_path: str = "/workspaces/lexia/data/processed/chunks.jsonl",
+    input_path:  str = os.path.join(BASE_DIR, "data", "processed", "corpus.jsonl"),
+    output_path: str = os.path.join(BASE_DIR, "data", "processed", "chunks.jsonl"),
 ) -> list[Document]:
     """
     Charge le corpus, chunk chaque document, sauvegarde en JSONL.

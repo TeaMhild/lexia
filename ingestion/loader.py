@@ -21,9 +21,13 @@ from xml.etree import ElementTree as ET
 from langchain_core.documents import Document
 from tqdm import tqdm
 from cleaner import extract_contenu
-# ── Configuration ─────────────────────────────────────────────────────────────
+from pathlib import Path
+import os
 
-LEGI_BASE = Path("/workspaces/lexia/data/raw/legi")
+# ── Configuration ─────────────────────────────────────────────────────────────
+BASE_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LEGI_BASE = Path(BASE_DIR) / "data" / "raw" / "legi"
+
 
 CODES = {
     "LEGITEXT000006072050": "Code du travail",

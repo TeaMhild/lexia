@@ -126,9 +126,6 @@ def retrieve_with_parent(
 # ── Test ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    import sys
-    sys.path.insert(0, "/workspaces/lexia")
-
     test_cases = [
         ("Mon employeur peut-il me licencier pendant un arrêt maladie ?", None),
         ("Quel est le délai de rétractation pour un achat en ligne ?", "Code de la consommation"),
