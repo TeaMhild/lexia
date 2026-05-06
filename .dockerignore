@@ -1,0 +1,29 @@
+# Données brutes — trop lourdes et régénérables
+data/raw/
+data/processed/
+
+# On GARDE data/index/ — l'index Chroma est inclus dans l'image
+# data/index/   ← commenté volontairement
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+
+# Git
+.git/
+.gitignore
+
+# Notebooks
+notebooks/
+
+# Tests
+tests/
+
+# Env
+.env
+
+# Cache HuggingFace
+.cache/

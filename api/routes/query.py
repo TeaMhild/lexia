@@ -108,8 +108,3 @@ async def health() -> HealthResponse:
             status_code=503,
             detail=f"Service indisponible : {str(e)}",
         )
-
-
-git add api/main.py api/routes/query.py api/schemas/models.py api/routes/__init__.py api/schemas/__init__.py
-git commit -m "feat(phase4): FastAPI — endpoints POST /query + GET /health"
-git push
