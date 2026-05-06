@@ -11,9 +11,10 @@ LABEL version="0.1.0"
 # PYTHONUNBUFFERED : affiche les logs Python en temps réel (pas de buffering)
 # PYTHONDONTWRITEBYTECODE : pas de fichiers .pyc inutiles dans le container
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000
+PYTHONDONTWRITEBYTECODE=1 \
+PORT=7860
 
+EXPOSE 7860
 # ── Répertoire de travail ─────────────────────────────────────────────────────
 WORKDIR /app
 
@@ -42,8 +43,9 @@ RUN pip install --no-cache-dir -e .
 # Docker vérifie toutes les 30s que l'API répond bien
 # Nb : le healthcheck permet à Docker/Kubernetes de
 # redémarrer automatiquement le container s'il ne répond plus
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=60s --timeout=30s --start-period=120s --retries=5 \
     CMD curl -f http://localhost:${PORT}/api/v1/health || exit 1
+    
 
 # ── Port exposé ───────────────────────────────────────────────────────────────
 EXPOSE ${PORT}

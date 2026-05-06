@@ -2,101 +2,121 @@
   {
     "question": "Mon employeur peut-il me licencier pendant un arrêt maladie ?",
     "ground_truth": "En principe, un employeur ne peut pas licencier un salarié en raison de son état de santé. Cependant, il peut le licencier pour un motif étranger à la maladie (faute grave, motif économique). Pendant un arrêt maladie pour accident du travail ou maladie professionnelle, la protection est renforcée par l'article L1226-9.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "masculin"
   },
   {
     "question": "Quel est le délai de rétractation pour un achat en ligne ?",
     "ground_truth": "Le consommateur dispose d'un délai de 14 jours pour exercer son droit de rétractation pour un achat en ligne, conformément à l'article L221-18 du Code de la consommation.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "neutre"
   },
   {
     "question": "Quelles sont les conditions pour une rupture conventionnelle ?",
     "ground_truth": "La rupture conventionnelle nécessite un accord entre l'employeur et le salarié, un ou plusieurs entretiens, la signature d'une convention, un délai de rétractation de 15 jours calendaires et une homologation par la DREETS.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "neutre"
   },
   {
-    "question": "Quelle est la durée maximale de la période d'essai pour un CDI cadre ?",
+    "question": "Quelle est la durée maximale de la période d'essai pour une cadre en CDI ?",
     "ground_truth": "Pour un cadre en CDI, la période d'essai est de 4 mois maximum, renouvelable une fois pour une durée totale maximale de 8 mois, selon l'article L1221-19 du Code du travail.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "féminin"
   },
   {
     "question": "Quels sont les droits du consommateur en cas de produit défectueux ?",
     "ground_truth": "Le consommateur bénéficie de la garantie légale de conformité (2 ans) et de la garantie contre les vices cachés. Il peut demander la réparation, le remplacement ou le remboursement du produit défectueux.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "masculin"
   },
   {
-    "question": "Combien d'heures supplémentaires un salarié peut-il faire par semaine ?",
+    "question": "Combien d'heures supplémentaires une salariée peut-elle faire par semaine ?",
     "ground_truth": "Le contingent annuel d'heures supplémentaires est fixé à 220 heures par an et par salarié. La durée maximale hebdomadaire est de 48 heures sur une semaine et 44 heures en moyenne sur 12 semaines.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "féminin"
   },
   {
     "question": "Qu'est-ce que le harcèlement moral au travail ?",
     "ground_truth": "Le harcèlement moral est défini par l'article L1152-1 comme des agissements répétés ayant pour objet ou effet une dégradation des conditions de travail susceptible de porter atteinte aux droits et à la dignité du salarié.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "neutre"
   },
   {
-    "question": "Quel est le délai de préavis pour un licenciement ?",
+    "question": "Quel est le délai de préavis pour le licenciement d'une salariée ?",
     "ground_truth": "Le délai de préavis dépend de l'ancienneté : 1 mois pour moins de 2 ans d'ancienneté, 2 mois pour 2 ans et plus, selon l'article L1234-1.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "féminin"
   },
   {
-    "question": "Un employeur peut-il modifier unilatéralement le contrat de travail ?",
-    "ground_truth": "Non, l'employeur ne peut pas modifier unilatéralement un élément essentiel du contrat de travail. Le salarié peut refuser une modification contractuelle.",
-    "style": "formel"
+    "question": "Un salarié peut-il refuser une modification de son contrat de travail ?",
+    "ground_truth": "Oui, le salarié peut refuser une modification d'un élément essentiel de son contrat. L'employeur ne peut pas imposer unilatéralement une telle modification.",
+    "style": "formel",
+    "genre": "masculin"
   },
   {
     "question": "Quelles sont les obligations d'information du vendeur en ligne ?",
     "ground_truth": "Le vendeur en ligne doit informer le consommateur sur son identité, les caractéristiques essentielles du bien, le prix total, les modalités de livraison et le droit de rétractation.",
-    "style": "formel"
+    "style": "formel",
+    "genre": "neutre"
   },
   {
-    "question": "mon patron peut me virer pendant que je suis en arrêt maladie ??",
-    "ground_truth": "En principe, un employeur ne peut pas licencier un salarié en raison de son état de santé. Cependant, il peut le licencier pour un motif étranger à la maladie (faute grave, motif économique).",
-    "style": "informel"
+    "question": "ma patronne peut me virer pendant que je suis en arrêt maladie ??",
+    "ground_truth": "En principe, un employeur ne peut pas licencier un salarié en raison de son état de santé. Cependant, il peut le licencier pour un motif étranger à la maladie.",
+    "style": "informel",
+    "genre": "féminin"
   },
   {
     "question": "j'ai acheté un truc sur internet et je veux le rendre, j'ai combien de temps ?",
     "ground_truth": "Le consommateur dispose d'un délai de 14 jours pour exercer son droit de rétractation pour un achat en ligne.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "neutre"
   },
   {
-    "question": "je veux quitter mon boulot à l'amiable avec mon boss comment ça marche ?",
+    "question": "je veux quitter mon boulot à l'amiable avec mon patron comment ça marche ?",
     "ground_truth": "La rupture conventionnelle nécessite un accord entre l'employeur et le salarié, un délai de rétractation de 15 jours et une homologation par la DREETS.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "masculin"
   },
   {
     "question": "on me fait faire des heures sup tous les soirs c'est légal ?",
-    "ground_truth": "Le contingent annuel est de 220 heures. La durée maximale est de 48 heures par semaine. Au-delà, l'employeur doit obtenir l'accord de l'inspection du travail.",
-    "style": "informel"
+    "ground_truth": "Le contingent annuel est de 220 heures. La durée maximale est de 48 heures par semaine.",
+    "style": "informel",
+    "genre": "neutre"
   },
   {
-    "question": "mon collègue me pourrit la vie au travail depuis des mois qu'est ce que je peux faire",
+    "question": "une collègue me rend la vie impossible au travail depuis des mois qu'est ce que je peux faire",
     "ground_truth": "Le harcèlement moral est interdit par l'article L1152-1. Le salarié peut saisir les représentants du personnel, la médecine du travail ou l'inspection du travail.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "féminin"
   },
   {
     "question": "j'ai reçu un colis abîmé le vendeur refuse de me rembourser",
     "ground_truth": "Le consommateur bénéficie de la garantie légale de conformité (2 ans). Il peut demander la réparation, le remplacement ou le remboursement.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "masculin"
   },
   {
     "question": "mon employeur veut me changer de poste sans me demander mon avis",
     "ground_truth": "L'employeur ne peut pas modifier unilatéralement un élément essentiel du contrat. Le salarié peut refuser.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "masculin"
   },
   {
-    "question": "c'est quoi la période d'essai max pour un cadre ?",
+    "question": "c'est quoi la période d'essai max pour une cadre ?",
     "ground_truth": "4 mois maximum, renouvelable une fois pour 8 mois au total.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "féminin"
   },
   {
     "question": "si je me fais licencier j'ai droit à quoi comme préavis",
     "ground_truth": "1 mois pour moins de 2 ans d'ancienneté, 2 mois pour 2 ans et plus.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "neutre"
   },
   {
     "question": "le site où j'ai commandé m'a pas dit les frais de port avant de payer c'est normal ?",
     "ground_truth": "Non, le vendeur doit informer sur le prix total incluant les frais de livraison avant la commande.",
-    "style": "informel"
+    "style": "informel",
+    "genre": "neutre"
   }
 ]
