@@ -384,3 +384,4 @@ tail -f logs/indexing.log
 python indexing/vector_store.py
 # → affiche les stats et teste le retrieval
 ```
+
