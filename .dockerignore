@@ -1,29 +1,17 @@
-# Données brutes — trop lourdes et régénérables
+# Données brutes uniquement
 data/raw/
-data/processed/
 
-# On GARDE data/index/ — l'index Chroma est inclus dans l'image
-# data/index/   ← commenté volontairement
+# On garde chunks.jsonl et index/
+# data/processed/  ← commenté
+# data/index/      ← commenté
 
 # Python
 __pycache__/
 *.pyc
 *.egg-info/
 .venv/
-venv/
-
-# Git
 .git/
-.gitignore
-
-# Notebooks
 notebooks/
-
-# Tests
-tests/
-
-# Env
 .env
-
-# Cache HuggingFace
 .cache/
+logs/

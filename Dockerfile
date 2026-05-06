@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # ── Code source ───────────────────────────────────────────────────────────────
 COPY . .
-
+RUN python indexing/embedder.py
 # ── Installation du package ───────────────────────────────────────────────────
 RUN pip install --no-cache-dir -e .
 
