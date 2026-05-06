@@ -100,8 +100,3 @@
     "style": "informel"
   }
 ]
-
-
-git add evaluation/eval_dataset.json
-git commit -m "feat(phase5): dataset 20 questions — formel + informel"
-git push origin main
