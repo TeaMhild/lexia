@@ -1,6 +1,27 @@
-# lexia
-RAG-powered legal assistant on French law (Code du travail + Code de la consommation)
+---
+title: LexIA API
+emoji: ⚖️
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+---
 
+# LexIA — Assistant juridique RAG
+
+Assistant juridique basé sur le droit français (Code du travail + Code de la consommation).
+
+## API
+
+- `POST /api/v1/query` — poser une question juridique
+- `GET /api/v1/health` — état de l'API
+
+## Stack
+
+- **Embedding** : paraphrase-multilingual-mpnet-base-v2
+- **Vector store** : Chroma
+- **LLM** : Llama 3.3 70B via Groq API
+- **Corpus** : 13 644 articles Légifrance (dump DILA, juillet 2025)
 
 ## Corpus
 
