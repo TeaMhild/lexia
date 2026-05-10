@@ -74,7 +74,8 @@ curl -X POST "https://majeylent-lexia-api.hf.space/api/v1/query" \
 Swagger UI : [https://majeylent-lexia-api.hf.space/docs](https://majeylent-lexia-api.hf.space/docs)
 → POST /api/v1/query → Try it out → Execute
 
-Python```
+Python
+```
 import requests
 response = requests.post(
     "https://majeylent-lexia-api.hf.space/api/v1/query",
