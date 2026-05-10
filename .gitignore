@@ -16,6 +16,7 @@ data/processed/*.jsonl
 
 # ── Index vectoriel (Chroma) — généré en phase 2 ─────────────────────────────
 data/index/
+data/index/chroma/*.sqlite3
 
 # ── Fichiers à garder (documentation + métadonnées) ──────────────────────────
 !data/processed/CORPUS.md
