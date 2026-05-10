@@ -1,9 +1,20 @@
 {
   "scores_globaux": {
-    "faithfulness": 0.36493506493506495,
-    "answer_relevancy": NaN,
-    "context_recall": NaN,
-    "context_precision": NaN
+    "faithfulness": 0.463,
+    "context_precision": 0.631,
+    "answer_relevancy": null,
+    "context_recall": null
+  },
+  "limitations_evaluation": {
+    "llm_juge": "llama-3.1-8b-instant via Groq — moins précis que GPT-4o",
+    "groq_incompatibilite": "RAGAS v0.4 utilise n>1 non supporté par Groq — Answer Relevancy et Context Recall non calculables",
+    "ground_truth": "Générées depuis mémoire LLM — biais circulaire possible, à remplacer par vérification manuelle sur Légifrance",
+    "ameliorations_possibles": [
+      "Utiliser OpenAI GPT-4o-mini comme LLM évaluateur",
+      "Vérifier les ground_truth sur Légifrance",
+      "Implémenter BGE-M3 pour hybrid retrieval",
+      "Augmenter le dataset à 50+ questions"
+    ]
   },
   "nb_questions": 10,
   "details": [

@@ -340,8 +340,8 @@ lexia/
 │   │   └── query.py     # POST /query + GET /health
 │   └── schemas/
 │       └── models.py    # Pydantic models request/response
-├── evaluation/          # Phase 5 — RAGAS (à venir)
-├── monitoring/          # Phase 6 — Langfuse (à venir)
+├── evaluation/          # Phase 5 — RAGAS (faithfulness=0.463)
+├── monitoring/          # Phase 6 — Langfuse
 ├── notebooks/           # Exploration et démonstration
 ├── data/
 │   ├── processed/
