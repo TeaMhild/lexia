@@ -19,7 +19,8 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-
+import time
+from monitoring.langfuse_client import trace_rag_query
 from rag.prompt import get_prompt, format_context
 from rag.retriever import retrieve_with_parent
 
@@ -97,18 +98,49 @@ def ask(
     stream: bool = False,
 ) -> str:
     """
-    Pose une question à LexIA et retourne la réponse.
+    Pose une question juridique à LexIA et retourne une réponse sourcée.
+
+    Pipeline complet :
+        1. Retrieve  — recherche sémantique dans Chroma (parent-child)
+        2. Augment   — formate les articles retrieved en contexte LLM
+        3. Generate  — appel Groq Llama 3.3 70B avec prompt strict
+        4. Monitor   — trace automatique dans Langfuse (latence, chunks, réponse)
 
     Args:
         question    : question juridique en langage naturel
-        filter_code : restreindre au Code du travail ou Code de la consommation
-        stream      : si True, affiche la réponse token par token
+                      ex: "Mon employeur peut-il me licencier pendant un arrêt maladie ?"
+        filter_code : restreint la recherche à un code spécifique
+                      valeurs possibles : "Code du travail", "Code de la consommation"
+                      None = recherche dans tout le corpus
+        stream      : si True, affiche la réponse token par token (stdout)
+                      utile pour l'API FastAPI avec SSE
 
     Returns:
-        Réponse juridique sourcée (str)
+        str : réponse juridique sourcée avec articles cités et URLs Légifrance.
+              Contient toujours un disclaimer juridique en fin de réponse.
+              Retourne un message d'indisponibilité si aucun article pertinent
+              n'est trouvé (score < MIN_RELEVANCE_SCORE).
+
+    Raises:
+        Ne lève pas d'exception — les erreurs Langfuse sont non bloquantes.
+        Les erreurs LLM ou Chroma se propagent normalement.
+
+    Example:
+        >>> response = ask(
+        ...     question="Quel est le délai de rétractation pour un achat en ligne ?",
+        ...     filter_code="Code de la consommation",
+        ... )
+        >>> print(response)
+        Selon l'article L221-18 du Code de la consommation...
+
+    NB :
+        La séparation retrieve / augment / generate est le pattern RAG standard.
+        Le monitoring Langfuse est non bloquant — une erreur de trace ne fait
+        jamais planter la réponse utilisateur (graceful degradation).
     """
     llm    = get_llm()
     prompt = get_prompt()
+    start  = time.time()
 
     # Retrieval
     docs    = retrieve_with_parent(question, filter_code=filter_code)
@@ -121,18 +153,32 @@ def ask(
     )
 
     if stream:
-        # Streaming token par token — utile pour l'API FastAPI (SSE)
         response = ""
         for chunk in llm.stream(messages):
             token = chunk.content
             print(token, end="", flush=True)
             response += token
-        print()  # saut de ligne final
-        return response
+        print()
     else:
-        response = llm.invoke(messages)
-        return response.content
+        response = llm.invoke(messages).content
 
+    latency_ms = (time.time() - start) * 1000
+
+    # Trace dans Langfuse
+    trace_rag_query(
+        question=question,
+        answer=response,
+        contexts=[{
+            "article_num":     d.metadata.get("article_num", ""),
+            "code_name":       d.metadata.get("code_name", ""),
+            "relevance_score": d.metadata.get("relevance_score", 0),
+            "page_content":    d.page_content,
+        } for d in docs],
+        filter_code=filter_code,
+        latency_ms=latency_ms,
+    )
+
+    return response
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 

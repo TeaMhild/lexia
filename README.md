@@ -33,3 +33,11 @@ Le corpus est constitué de **13 644 articles juridiques** extraits du dump
 open data LEGI de la DILA (Légifrance), en vigueur au 13 juillet 2025.
 
 → [Documentation complète du corpus](data/processed/CORPUS.md)
+
+git add README.md
+git add evaluation/results/ragas_scores.json
+git add evaluation/results/responses_interim.json
+git add monitoring/langfuse_client.py
+git add rag/chain.py
+git add rag/prompt.py
+git add .env.example
